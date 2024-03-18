@@ -1,0 +1,1 @@
+/opt/homebrew/Cellar/postgresql@14/14.9/bin/postgres "-D" "/Users/onlyonelz/Documents/PersonalProjects/TS_Quiz/server/pg_data"
