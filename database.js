@@ -1,11 +1,12 @@
 const { Client } = require('pg');
+const { createUserTable, createHelloQuery } = require('./tables');
 
 const dbConfig = {
-  user: 'onlyonelz',
-  host: 'localhost',
-  database: 'ts_quiz',
-  password: 'Bentley1202!', 
-  port: 5432, 
+  user: 'postgres',
+  host: 'monorail.proxy.rlwy.net',
+  database: 'railway',
+  password: 'SsOEKWqkEnvsfCtdvvUgnUcWzBZQBqoV', 
+  port: 59815, 
 };
 
 const client = new Client(dbConfig);
@@ -14,24 +15,17 @@ client.connect()
   .then(() => {
     console.log('Connected to the database');
     
-
-    const createTableQuery = `
-    CREATE TABLE IF NOT EXISTS Users (
-      id SERIAL PRIMARY KEY,
-      username VARCHAR(50) NOT NULL,
-      email VARCHAR(100) NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `;
-    
-    return client.query(createTableQuery);
+    // Execute the queries
+    return Promise.all([
+      client.query(createUserTable),
+      client.query(createHelloQuery)
+    ]);
   })
-  .then((result) => {
-    console.log('Table created successfully');
+  .then(() => {
+    console.log('Tables created successfully');
   })
   .catch((err) => {
-    console.error('Error creating table:', err);
-  })
-  .finally(() => {
-    client.end();
+    console.error('Error creating tables:', err);
   });
+
+module.exports = client;
