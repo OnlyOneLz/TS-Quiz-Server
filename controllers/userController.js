@@ -1,12 +1,12 @@
 const client = require('../database');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const createUser = async (req, res) => {
     try {
         const username = req.body.username;
         const email = req.body.email;
         const password = req.body.password;
-
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const insertQuery = `
@@ -17,6 +17,7 @@ const createUser = async (req, res) => {
         const values = [username, email, hashedPassword];
 
         const result = await client.query(insertQuery, values);
+        console.log(result)
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error creating user:', error);
@@ -30,7 +31,10 @@ const allUsers = async (req, res) => {
             SELECT * FROM Users
     `;
         const result = await client.query(insertQuery);
-        res.status(200).json({ success: true, data: result.rows});
+        const user = result.rows[0];
+        const token = jwt.sign({ userId: user.id }, 'your-secret-key', { expiresIn: '1h' });
+
+        res.status(200).json({ success: true, data: result.rows, token});
     } catch (error) {
         console.error('Error creating user:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });
@@ -47,12 +51,13 @@ const loginUser = async (req, res) => {
              WHERE username = $1 OR email = $1
     `;
         const userQueryResult = await client.query(selectQuery, [username]);
-
+        
         if (userQueryResult.rows.length === 0) {
             return res.status(404).json({ success: false, error: 'User not found' });
         }
 
         const user = userQueryResult.rows[0];
+        const token = jwt.sign({ userId: user.id }, 'your-secret-key', { expiresIn: '1h' });
 
         const passwordMatch = await bcrypt.compare(password, user.password);
 
@@ -60,7 +65,7 @@ const loginUser = async (req, res) => {
             return res.status(401).json({ success: false, error: 'Invalid password' });
         }
 
-        res.status(200).json({ success: true, data: user });
+        res.status(200).json({ success: true, data: user , token});
     } catch (error) {
         console.error('Error authenticating user:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });

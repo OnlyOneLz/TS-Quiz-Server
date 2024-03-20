@@ -10,4 +10,4 @@ app.use(cors())
 
 app.use('/api', userRoutes);
 
-app.listen(4001, () => console.log("Server listening on port 4000"))
+app.listen(4001, () => console.log("Server listening on port 4001"))
