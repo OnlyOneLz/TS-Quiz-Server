@@ -171,7 +171,32 @@ const userInfo = async (req, res) => {
 
         res.status(200).json({ success: true, message: "User info obtained successfully" })
     } catch (error) {
-        console.error('Error calculating progress left:', error);
+        console.error('Error getting user info:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+}
+
+const getLeaderboard = async (req, res) => {
+    try {
+        const getLeaderboardQuery = `
+            SELECT *
+            FROM Users
+            ORDER BY progress DESC
+            LIMIT 10
+        `;
+
+        const leaderboard = await client.query(getLeaderboardQuery)
+        const data = leaderboard.rows
+        for (i = 0; i < data.length; i++) {
+            console.log("User: ", data[i].username);
+            console.log("Level: ", data[i].level);
+            console.log("Progress: ", data[i].progress);
+        }
+
+        res.status(200).json({ success: true, message: "Leaderboard obtained successfully" })
+
+    } catch (error) {
+        console.error('Error getting leaderboard:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });
     }
 }
@@ -182,5 +207,6 @@ module.exports = {
     deleteUser,
     allUsers,
     addProgress,
-    userInfo
+    userInfo,
+    getLeaderboard
 };
