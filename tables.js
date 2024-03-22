@@ -4,7 +4,9 @@ CREATE TABLE IF NOT EXISTS Users (
   username VARCHAR(50) NOT NULL,
   email VARCHAR(100) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  password VARCHAR(100) NULL
+  password VARCHAR(100) NULL,
+  level INTEGER DEFAULT 1,
+  progress INTEGER DEFAULT 0
 )
 `;
 const createQuestionTable = `

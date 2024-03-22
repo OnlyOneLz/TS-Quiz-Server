@@ -16,7 +16,7 @@ const allAnswers = async (req, res) => {
 
 const byQuestion = async (req, res) => {
     try {
-        const question = req.body.question
+        const question = req.params.question
 
         const insertQuery = `
             SELECT * FROM Answers

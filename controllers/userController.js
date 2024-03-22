@@ -90,9 +90,97 @@ const deleteUser = async (req, res) => {
     }
 }
 
+const calculateProgressNeeded = (currentLevel) => {
+    return (Math.floor(100 * Math.pow(currentLevel, 2)))/2
+}
+
+const addProgress = async (req, res) => {
+    try {
+        const points = Number(req.params.points)
+        const userId = req.params.userId
+        console.log(points);
+        console.log(userId);
+
+        const getUserQuery = `
+            SELECT progress, level
+            FROM Users
+            WHERE id = $1
+        `;
+
+        const userResult = await client.query(getUserQuery, [userId])
+        const currentProgress = userResult.rows[0].progress
+        const currentLevel = userResult.rows[0].level
+        console.log("Current progress:", currentProgress);
+        console.log("Current level:", currentLevel);
+
+        const newProgress = currentProgress + points
+        console.log("New Progress:", newProgress);
+
+        const progressNeededForNextLevel = calculateProgressNeeded(currentLevel)
+        console.log(progressNeededForNextLevel);
+
+
+        // Chec if new progress exceeeds progress needeed to level up
+        if (newProgress >= progressNeededForNextLevel) {
+            // Increment the user's level
+            const newLevel = currentLevel + 1
+                
+                const updateLevelQuery = `
+                UPDATE Users
+                SET level = $1
+                WHERE id = $2
+                `;
+                
+                await client.query(updateLevelQuery, [newLevel, userId])
+                console.log("Level increased to:", newLevel);
+        }
+
+        const updateProgressQuery = `
+            UPDATE Users
+            SET progress = $1
+            WHERE id = $2
+        `;
+        await client.query(updateProgressQuery, [newProgress, userId])
+        res.status(200).json({ success: true, message: "Progress updated successfully"})
+        
+    } catch (error) {
+        console.error('Error updating progress:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+}
+
+const userInfo = async (req, res) => {
+    try {
+        const userId = req.params.userId
+
+        const getUserQuery = `
+            SELECT progress, level
+            FROM users
+            WHERE id = $1
+        `;
+
+        const userResult = await client.query(getUserQuery, [userId])
+        const currentProgress = userResult.rows[0].progress
+        const currentLevel = userResult.rows[0].level
+        console.log("Current level:", currentLevel);
+        console.log("Current progress:", currentProgress);
+        
+        const progressNeededForNextLevel = calculateProgressNeeded(currentLevel)
+        const progressRemaining = progressNeededForNextLevel - currentProgress
+        console.log("Progress left:", progressRemaining);
+
+        res.status(200).json({ success: true, message: "User info obtained successfully" })
+    } catch (error) {
+        console.error('Error calculating progress left:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+}
+
 module.exports = {
     createUser,
     loginUser,
     deleteUser,
-    allUsers
+    allUsers,
+    addProgress,
+    userInfo
 };
