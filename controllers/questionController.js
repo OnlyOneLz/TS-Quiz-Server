@@ -37,7 +37,7 @@ const randomQuestions = async (req, res) => {
 
         let insertQuery;
 
-        if (category === 'random') {
+        if (category === 'Random') {
             insertQuery = `
                 SELECT * FROM Questions
                 ORDER BY RANDOM()
