@@ -9,5 +9,6 @@ router.get('/info/:userId', userController.userInfo);
 router.get('/leaderboard', userController.getLeaderboard);
 router.delete('/users', userController.deleteUser);
 router.put('/:userId/:points', userController.addProgress)
+router.get('/get-one-user/:id', userController.getOneUser)
 
 module.exports = router;

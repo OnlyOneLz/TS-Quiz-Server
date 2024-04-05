@@ -29,9 +29,19 @@ CREATE TABLE IF NOT EXISTS Answers (
 )
 `;
 
+const createScoreboardTable = `
+CREATE TABLE IF NOT EXISTS Scoreboard (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES Users(id),
+  score INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+`;
+
 
 module.exports = {
     createUserTable, 
     createQuestionTable,
-    createAnswerTable
+    createAnswerTable,
+    createScoreboardTable
 }
