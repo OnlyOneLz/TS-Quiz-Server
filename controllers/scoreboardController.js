@@ -1,4 +1,5 @@
 const client = require('../database');
+const dateFormatter = require('../utilities/dateFormatter.Js');
 
 const scoreboard = async (req, res, bool) => {
     try {
@@ -52,7 +53,22 @@ const addUserScore = async (req, res) => {
         const userId = req.body.userId
         const userScore = req.body.userScore;
         const userScores = await scoreboard(req, res, false);
+        let createdDate = null
+        if (userScores.length > 0) {
+         createdDate = dateFormatter(userScores[0].created_at.toString())
+        }
+        const date = new Date();
+        const currentDate = dateFormatter(date)
         const alreadyOnScoreboard = checkUserIds(userId, userScores);
+
+        console.log(currentDate, createdDate);
+        if (createdDate !== currentDate) {
+            const deleteQuery = `
+            DELETE FROM Scoreboard
+        `;
+        await client.query(deleteQuery);
+        }
+
         if (!alreadyOnScoreboard) {
             if (userScores.length > 2) {
                 if (userScores[2].score > userScore) {
@@ -75,7 +91,7 @@ const addUserScore = async (req, res) => {
         } else {
             const updateQuery = `
                 UPDATE Scoreboard
-                SET score = $1
+                SET score = score + $1
                 WHERE user_id = $2
             `;
             const values = [userScore, userId];
