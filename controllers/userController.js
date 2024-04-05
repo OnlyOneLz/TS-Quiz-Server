@@ -34,7 +34,7 @@ const allUsers = async (req, res) => {
         const user = result.rows[0];
         const token = jwt.sign({ userId: user.id }, 'your-secret-key', { expiresIn: '1h' });
 
-        res.status(200).json({ success: true, data: result.rows, token});
+        res.status(200).json({ success: true, data: result.rows, token });
     } catch (error) {
         console.error('Error creating user:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });
@@ -51,7 +51,7 @@ const loginUser = async (req, res) => {
              WHERE username = $1 OR email = $1
     `;
         const userQueryResult = await client.query(selectQuery, [username]);
-        
+
         if (userQueryResult.rows.length === 0) {
             return res.status(404).json({ success: false, error: 'User not found' });
         }
@@ -65,7 +65,7 @@ const loginUser = async (req, res) => {
             return res.status(401).json({ success: false, error: 'Invalid password' });
         }
 
-        res.status(200).json({ success: true, data: user , token});
+        res.status(200).json({ success: true, data: user, token });
     } catch (error) {
         console.error('Error authenticating user:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });
@@ -91,7 +91,7 @@ const deleteUser = async (req, res) => {
 }
 
 const calculateProgressNeeded = (currentLevel) => {
-    return (Math.floor(100 * Math.pow(currentLevel, 2)))/2
+    return (Math.floor(100 * Math.pow(currentLevel, 2))) / 2
 }
 
 const addProgress = async (req, res) => {
@@ -124,15 +124,15 @@ const addProgress = async (req, res) => {
         if (newProgress >= progressNeededForNextLevel) {
             // Increment the user's level
             const newLevel = currentLevel + 1
-                
-                const updateLevelQuery = `
+
+            const updateLevelQuery = `
                 UPDATE Users
                 SET level = $1
                 WHERE id = $2
                 `;
-                
-                await client.query(updateLevelQuery, [newLevel, userId])
-                console.log("Level increased to:", newLevel);
+
+            await client.query(updateLevelQuery, [newLevel, userId])
+            console.log("Level increased to:", newLevel);
         }
 
         const updateProgressQuery = `
@@ -141,8 +141,8 @@ const addProgress = async (req, res) => {
             WHERE id = $2
         `;
         await client.query(updateProgressQuery, [newProgress, userId])
-        res.status(200).json({ success: true, message: "Progress updated successfully"})
-        
+        res.status(200).json({ success: true, message: "Progress updated successfully" })
+
     } catch (error) {
         console.error('Error updating progress:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });
@@ -164,7 +164,7 @@ const userInfo = async (req, res) => {
         const currentLevel = userResult.rows[0].level
         console.log("Current level:", currentLevel);
         console.log("Current progress:", currentProgress);
-        
+
         const progressNeededForNextLevel = calculateProgressNeeded(currentLevel)
         const progressRemaining = progressNeededForNextLevel - currentProgress
         console.log("Progress left:", progressRemaining);
@@ -201,6 +201,28 @@ const getLeaderboard = async (req, res) => {
     }
 }
 
+const getOneUser = async (req, res) => {
+    try {
+        const getLeaderboardQuery = `
+            SELECT *
+            FROM Users
+            WHERE id = $1
+        `;
+        const userQueryResult = await client.query(getLeaderboardQuery, [req.params.id]);
+
+        if (userQueryResult.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        const user = userQueryResult.rows[0];
+        res.status(200).json({ success: true, data: user});
+
+    } catch (error) {
+        console.error('Error getting leaderboard:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+}
+
 module.exports = {
     createUser,
     loginUser,
@@ -208,5 +230,6 @@ module.exports = {
     allUsers,
     addProgress,
     userInfo,
-    getLeaderboard
+    getLeaderboard,
+    getOneUser
 };

@@ -1,5 +1,5 @@
 const { Client } = require('pg');
-const { createUserTable, createQuestionTable, createAnswerTable } = require('./tables');
+const { createUserTable, createQuestionTable, createAnswerTable, createScoreboardTable } = require('./tables');
 
 const dbConfig = {
   user: 'postgres',
@@ -19,7 +19,8 @@ client.connect()
     return Promise.all([
       client.query(createUserTable),
       client.query(createQuestionTable),
-      client.query(createAnswerTable)
+      client.query(createAnswerTable),
+      client.query(createScoreboardTable)
     ]);
   })
   .then(() => {
