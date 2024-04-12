@@ -65,7 +65,10 @@ const loginUser = async (req, res) => {
             return res.status(401).json({ success: false, error: 'Invalid password' });
         }
 
-        res.status(200).json({ success: true, data: user, token });
+        const previousProgressNeeded = calculateProgressNeeded(user.level - 1)
+        const progressNeeded = calculateProgressNeeded(user.level)
+
+        res.status(200).json({ success: true, data: [{user: user}, {previousProgressNeeded: previousProgressNeeded}, {progressNeeded: progressNeeded}], token});
     } catch (error) {
         console.error('Error authenticating user:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });
@@ -96,8 +99,8 @@ const calculateProgressNeeded = (currentLevel) => {
 
 const addProgress = async (req, res) => {
     try {
-        const points = Number(req.params.points)
-        const userId = req.params.userId
+        const points = Number(req.body.userScore)
+        const userId = req.body.userId
         console.log(points);
         console.log(userId);
 
@@ -119,11 +122,12 @@ const addProgress = async (req, res) => {
         const progressNeededForNextLevel = calculateProgressNeeded(currentLevel)
         console.log(progressNeededForNextLevel);
 
+        let newLevel = null
 
         // Chec if new progress exceeeds progress needeed to level up
         if (newProgress >= progressNeededForNextLevel) {
             // Increment the user's level
-            const newLevel = currentLevel + 1
+             newLevel = currentLevel + 1
 
             const updateLevelQuery = `
                 UPDATE Users
@@ -140,8 +144,10 @@ const addProgress = async (req, res) => {
             SET progress = $1
             WHERE id = $2
         `;
+        const previousProgressNeeded = calculateProgressNeeded(newLevel ? currentLevel : currentLevel - 1)
+        const progressNeeded = calculateProgressNeeded(newLevel ? newLevel : currentLevel)
         await client.query(updateProgressQuery, [newProgress, userId])
-        res.status(200).json({ success: true, message: "Progress updated successfully" })
+        res.status(200).json({ success: true, message: "Progress updated successfully",data: [{progressNeeded: progressNeeded}, {previousProgressNeeded: previousProgressNeeded}] })
 
     } catch (error) {
         console.error('Error updating progress:', error);

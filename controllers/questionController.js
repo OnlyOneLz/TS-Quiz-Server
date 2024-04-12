@@ -21,6 +21,8 @@ const byCategory = async (req, res) => {
         const insertQuery = `
             SELECT * FROM Questions
             WHERE category = $1
+            ORDER BY RANDOM()
+            LIMIT 10
         `;
         
         const result = await client.query(insertQuery, [category])
@@ -51,7 +53,7 @@ const randomQuestions = async (req, res) => {
                 SELECT * FROM Questions
                 WHERE category = $1
                 ORDER BY RANDOM()
-                LIMIT 5
+                LIMIT 10
             `;
             // Pass category as a parameter when category is not 'random'
             const result = await client.query(insertQuery, [category]);
