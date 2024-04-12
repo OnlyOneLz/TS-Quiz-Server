@@ -6,12 +6,12 @@ const scoreboard = async (req, res, bool) => {
         const selectQuery = `
             SELECT * FROM Scoreboard
             ORDER BY score DESC
-            LIMIT 3
+            LIMIT 10
         `;
 
         const result = await client.query(selectQuery);
-        if (bool) {
-            res.status(200).json({ success: true, data: result.rows });
+        if(bool){
+        res.status(200).json({ success: true, data: result.rows });
         } else {
         return result.rows
         }
@@ -25,7 +25,7 @@ const checkUserIds = (userId, userScores) => {
 
     try {
         for (let i = 0; i < userScores.length; i++) {
-            if (userScores[i].user_id === userId) {
+            if (userScores[i].user_id === parseInt(userId)) {
                 return userId;
             }
         }
@@ -53,15 +53,17 @@ const addUserScore = async (req, res) => {
         const userId = req.body.userId
         const userScore = req.body.userScore;
         const userScores = await scoreboard(req, res, false);
+        console.log(userScores);
         let createdDate = null
+
         if (userScores.length > 0) {
          createdDate = dateFormatter(userScores[0].created_at.toString())
         }
+
         const date = new Date();
         const currentDate = dateFormatter(date)
         const alreadyOnScoreboard = checkUserIds(userId, userScores);
 
-        console.log(currentDate, createdDate);
         if (createdDate !== currentDate) {
             const deleteQuery = `
             DELETE FROM Scoreboard
@@ -70,11 +72,11 @@ const addUserScore = async (req, res) => {
         }
 
         if (!alreadyOnScoreboard) {
-            if (userScores.length > 2) {
-                if (userScores[2].score > userScore) {
+            if (userScores.length > 9) {
+                if (userScores[9].score > userScore) {
                     return res.status(200).json({ success: true, message: "User score not high enough for scoreboard" });
                 } else {
-                    await deleteUserScore(userScores[2].user_id);
+                    await deleteUserScore(userScores[9].user_id);
                     const insertQuery = `
                     INSERT INTO Scoreboard(user_id, score)
                     VALUES ($1, $2)

@@ -16,26 +16,27 @@ const allAnswers = async (req, res) => {
 
 const byQuestion = async (req, res) => {
     try {
-        const question = req.params.question
+        const questions = req.body.questions.map(id => parseInt(id)); 
+        const placeholders = questions.map((_, index) => `$${index + 1}`).join(', ');
 
-        const insertQuery = `
+        const selectQuery = `
             SELECT * FROM Answers
-            WHERE question_id = $1
+            WHERE question_id IN (${placeholders})
         `;
         
-        const result = await client.query(insertQuery, [question])
-        res.status(200).json({ success: true, data: result.rows })
+        const result = await client.query(selectQuery, questions);
+        res.status(200).json({ success: true, data: result.rows });
     } catch (error) {
-        console.error("Error getting answers:", error)
-        res.status(500).json({  success: false, error: 'internal server error'})
+        console.error("Error getting answers:", error);
+        res.status(500).json({ success: false, error: 'internal server error' });
     }
-}
+};
+
 
 const createQuestionWithAnswers = async (req, res) => {
     try {
         const { question, category, answers } = req.body;
 
-        // Insert the question into the Questions table
         const insertQuestionQuery = `
             INSERT INTO Questions (question, category) 
             VALUES ($1, $2) 
@@ -45,7 +46,6 @@ const createQuestionWithAnswers = async (req, res) => {
         const questionResult = await client.query(insertQuestionQuery, questionValues);
         const questionId = questionResult.rows[0].id;
 
-        // Insert the answers into the Answers table
         for (const answerData of answers) {
             const { answer, is_correct, points } = answerData;
 
