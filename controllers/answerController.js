@@ -35,19 +35,19 @@ const byQuestion = async (req, res) => {
 
 const createQuestionWithAnswers = async (req, res) => {
     try {
-        const { question, category, answers } = req.body;
+        const { question, category, explanation, answers } = req.body;
 
         const insertQuestionQuery = `
-            INSERT INTO Questions (question, category) 
-            VALUES ($1, $2) 
+            INSERT INTO Questions (question, category, explanation) 
+            VALUES ($1, $2, $3) 
             RETURNING id
         `;
-        const questionValues = [question, category];
+        const questionValues = [question, category, explanation];
         const questionResult = await client.query(insertQuestionQuery, questionValues);
         const questionId = questionResult.rows[0].id;
 
         for (const answerData of answers) {
-            const { answer, is_correct, points } = answerData;
+            const { answer, is_correct, points} = answerData;
 
             const insertAnswerQuery = `
                 INSERT INTO Answers (answer, question_id, is_correct, points) 
