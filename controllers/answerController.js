@@ -39,36 +39,24 @@ const createQuestionWithAnswers = async (req, res) => {
     const allQsAndAs = req.body;
 
     allQsAndAs.map(async (QAndAs) => {
-      const question = QAndAs.question;
-      const category = QAndAs.category;
-      const explanation = QAndAs.explanation;
-      const answers = QAndAs.answers;
+      const { question, category, explanation, answers } = QAndAs;
 
       const insertQuestionQuery = `
-
-    try {
-        const { question, category, explanation, answers } = req.body;
-
-        const insertQuestionQuery = `
-
-            INSERT INTO Questions (question, category, explanation) 
-            VALUES ($1, $2, $3) 
-            RETURNING id
-        `;
+        INSERT INTO Questions (question, category, explanation) 
+        VALUES ($1, $2, $3) 
+        RETURNING id
+      `;
       const questionValues = [question, category, explanation];
-      const questionResult = await client.query(
-        insertQuestionQuery,
-        questionValues
-      );
+      const questionResult = await client.query(insertQuestionQuery, questionValues);
       const questionId = questionResult.rows[0].id;
 
       for (const answerData of answers) {
         const { answer, is_correct, points } = answerData;
 
         const insertAnswerQuery = `
-                INSERT INTO Answers (answer, question_id, is_correct, points) 
-                VALUES ($1, $2, $3, $4)
-            `;
+          INSERT INTO Answers (answer, question_id, is_correct, points) 
+          VALUES ($1, $2, $3, $4)
+        `;
         const answerValues = [answer, questionId, is_correct, points];
         await client.query(insertAnswerQuery, answerValues);
       }
@@ -83,6 +71,8 @@ const createQuestionWithAnswers = async (req, res) => {
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 };
+
+  
 
 module.exports = {
   allAnswers,
