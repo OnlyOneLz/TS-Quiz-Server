@@ -45,6 +45,12 @@ const createQuestionWithAnswers = async (req, res) => {
       const answers = QAndAs.answers;
 
       const insertQuestionQuery = `
+
+    try {
+        const { question, category, explanation, answers } = req.body;
+
+        const insertQuestionQuery = `
+
             INSERT INTO Questions (question, category, explanation) 
             VALUES ($1, $2, $3) 
             RETURNING id
