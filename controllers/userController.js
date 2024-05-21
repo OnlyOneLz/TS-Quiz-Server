@@ -17,8 +17,12 @@ const createUser = async (req, res) => {
     const values = [username, email, hashedPassword];
 
     const result = await client.query(insertQuery, values);
+    const user = result.rows[0];
+    const token = jwt.sign({ userId: user.id }, "your-secret-key", {
+      expiresIn: "1h",
+    });
     console.log(result);
-    res.status(201).json({ success: true, data: result.rows[0] });
+    res.status(201).json({ success: true, data: result.rows[0], token: token });
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ success: false, error: "Internal server error" });
@@ -74,17 +78,15 @@ const loginUser = async (req, res) => {
     const previousProgressNeeded = calculateProgressNeeded(user.level - 1);
     const progressNeeded = calculateProgressNeeded(user.level);
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        data: [
-          { user: user },
-          { previousProgressNeeded: previousProgressNeeded },
-          { progressNeeded: progressNeeded },
-        ],
-        token,
-      });
+    res.status(200).json({
+      success: true,
+      data: [
+        { user: user },
+        { previousProgressNeeded: previousProgressNeeded },
+        { progressNeeded: progressNeeded },
+      ],
+      token,
+    });
   } catch (error) {
     console.error("Error authenticating user:", error);
     res.status(500).json({ success: false, error: "Internal server error" });
@@ -167,17 +169,15 @@ const addProgress = async (req, res) => {
       newLevel ? newLevel : currentLevel
     );
     await client.query(updateProgressQuery, [newProgress, userId]);
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Progress updated successfully",
-        data: [
-          { progressNeeded: progressNeeded },
-          { previousProgressNeeded: previousProgressNeeded },
-          { level: newLevel ? newLevel : currentLevel },
-        ],
-      });
+    res.status(200).json({
+      success: true,
+      message: "Progress updated successfully",
+      data: [
+        { progressNeeded: progressNeeded },
+        { previousProgressNeeded: previousProgressNeeded },
+        { level: newLevel ? newLevel : currentLevel },
+      ],
+    });
   } catch (error) {
     console.error("Error updating progress:", error);
     res.status(500).json({ success: false, error: "Internal server error" });
