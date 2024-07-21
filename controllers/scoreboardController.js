@@ -1,5 +1,5 @@
 const client = require("../database");
-const dateFormatter = require("../utilities/dateFormatter.Js");
+const dateFormatter = require("../utilities/dateFormatter.js");
 
 const scoreboard = async (req, res, bool) => {
   try {
